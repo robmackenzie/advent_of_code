@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import secrets
 site_url='https://adventofcode.com/2021/day/[day]'
 input_url='https://adventofcode.com/2021/day/[day]/input'
@@ -21,12 +22,11 @@ def post_script(day_num):
     day_site_url=site_url.replace('[day]',str(day_num))
     day_input_url=input_url.replace('[day]',str(day_num))
     folder_name=glob.glob("Day_" + f'{day_num:02d}'+"*")[0]
-
     input_request = requests.get(day_input_url, cookies=secrets.cookie)
     input_request.raise_for_status()
     with open(folder_name+"/input", "w") as file:
         file.write(input_request.text)
-    webbrowser.open_new(day_site_url)
+    #webbrowser.open_new(day_site_url)
 
 
 if __name__ == "__main__":
