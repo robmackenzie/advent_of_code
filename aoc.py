@@ -9,11 +9,23 @@ from datetime import datetime, time, timedelta,timezone
 from time import sleep
 from shutil import copyfile
 
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+retry_strategy = Retry(
+    total=3,
+    backoff_factor=1,
+    status_forcelist=[404,500,501,502,509],
+    method_whitelist=["GET"]
+)
+adapter = HTTPAdapter(max_retries=retry_strategy)
+http = requests.Session()
+http.mount("https://", adapter)
 
 def before_script(day_num):
     day_folder_name="Day_" + f'{day_num:02d}'
     if not(glob.glob(day_folder_name+"*")):
         os.mkdir(day_folder_name)
+        open(day_folder_name+"/input", 'w').close()
         copyfile("Template/template.ipynb",day_folder_name + "/Day_" + f'{day_num:02d}' + ".ipynb")
         print("Creating directory for " + day_folder_name)
     else:
@@ -22,7 +34,7 @@ def post_script(day_num):
     day_site_url=site_url.replace('[day]',str(day_num))
     day_input_url=input_url.replace('[day]',str(day_num))
     folder_name=glob.glob("Day_" + f'{day_num:02d}'+"*")[0]
-    input_request = requests.get(day_input_url, cookies=secrets.cookie)
+    input_request = http.get(day_input_url, cookies=secrets.cookie)
     input_request.raise_for_status()
     with open(folder_name+"/input", "w") as file:
         file.write(input_request.text)
